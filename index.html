@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Future Smart CPU — Interactive CPU Simulator &amp; Smart Pipeline Doctor</title>
+    <meta
+      name="description"
+      content="Interactive CPU Simulator, Five-Stage Pipeline Visualizer, and Smart Pipeline Doctor for Computer Architecture education."
+    />
+    <meta property="og:title" content="Future Smart CPU — Interactive CPU Simulator & Smart Pipeline Doctor" />
+    <meta
+      property="og:description"
+      content="Interactive CPU Simulator, Five-Stage Pipeline Visualizer, and Smart Pipeline Doctor for Computer Architecture education."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="stylesheet" href="style.css" />
+    <script defer src="script.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a href="#cpu" class="brand" id="brandLink">
+          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+            <rect x="9.5" y="9.5" width="5" height="5" rx="0.5"></rect>
+            <path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"></path>
+          </svg>
+          <span>Future Smart CPU</span>
+        </a>
+
+        <nav class="topnav" role="tablist" aria-label="Simulator sections">
+          <button type="button" class="nav active" data-page="cpu" role="tab" aria-selected="true">
+            CPU Dashboard
+          </button>
+          <button type="button" class="nav" data-page="pipeline" role="tab" aria-selected="false">
+            Pipeline Simulator
+          </button>
+          <button type="button" class="nav" data-page="doctor" role="tab" aria-selected="false">
+            Smart Pipeline Doctor
+          </button>
+          <button type="button" class="nav" data-page="learn" role="tab" aria-selected="false">
+            Learn
+          </button>
+        </nav>
+
+        <div class="topbar-actions">
+          <button type="button" id="quickDemoBtn" class="btn-outline">Load Demo Suite</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <!-- PHASE 1: CPU DASHBOARD -->
+      <section id="cpu" class="page active" role="tabpanel">
+        <div class="section-head">
+          <div>
+            <p class="kicker">Phase 1 · Single-Cycle Architecture</p>
+            <h1>CPU Dashboard</h1>
+          </div>
+          <p class="section-subtitle">
+            Execute register and arithmetic instructions to inspect Control Unit decoding, ALU operations, and register state updates.
+          </p>
+        </div>
+
+        <div class="cpu-layout">
+          <!-- Left / Main Execution & Datapath Column -->
+          <div class="cpu-primary">
+            <article class="panel">
+              <div class="panel-head">
+                <h2>Instruction Console</h2>
+                <span class="meta-text">ISA: MOV · ADD · SUB · MULT · DIV</span>
+              </div>
+
+              <div class="instruction-bar">
+                <label class="sr-only" for="instruction">Enter assembly instruction</label>
+                <input
+                  id="instruction"
+                  type="text"
+                  placeholder="Enter instruction (e.g. ADD R3, R1, R2)"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+                <div class="btn-group">
+                  <button type="button" id="executeBtn" class="btn-primary">Execute Instruction</button>
+                  <button type="button" id="resetBtn" class="btn-secondary">Reset CPU</button>
+                </div>
+              </div>
+
+              <div class="quick-presets" aria-label="Sample instructions">
+                <span class="preset-label">Samples:</span>
+                <button type="button" class="preset-btn" data-inst="MOV R1, 20">MOV R1, 20</button>
+                <button type="button" class="preset-btn" data-inst="ADD R3, R1, R2">ADD R3, R1, R2</button>
+                <button type="button" class="preset-btn" data-inst="SUB R3, R1, R2">SUB R3, R1, R2</button>
+                <button type="button" class="preset-btn" data-inst="MULT R3, R1, R2">MULT R3, R1, R2</button>
+                <button type="button" class="preset-btn" data-inst="DIV R3, R1, R2">DIV R3, R1, R2</button>
+              </div>
+
+              <div id="result" class="output" role="status" aria-live="polite">
+                Enter an instruction above and click Execute Instruction.
+              </div>
+            </article>
+
+            <!-- CPU Architecture Datapath Grid -->
+            <div class="datapath-grid">
+              <article class="panel" id="registersPanel">
+                <div class="panel-head">
+                  <h2>CPU Registers</h2>
+                  <span class="meta-text">General Purpose</span>
+                </div>
+                <div class="reg-list">
+                  <div class="reg-row" id="regRowR1">
+                    <div class="reg-meta">
+                      <label for="r1" class="reg-name">R1</label>
+                      <span class="reg-tag" id="r1Tag">Initial</span>
+                    </div>
+                    <input id="r1" class="reg-input tabular" type="number" step="any" value="10" />
+                  </div>
+                  <div class="reg-row" id="regRowR2">
+                    <div class="reg-meta">
+                      <label for="r2" class="reg-name">R2</label>
+                      <span class="reg-tag" id="r2Tag">Initial</span>
+                    </div>
+                    <input id="r2" class="reg-input tabular" type="number" step="any" value="5" />
+                  </div>
+                  <div class="reg-row" id="regRowR3">
+                    <div class="reg-meta">
+                      <label for="r3" class="reg-name">R3</label>
+                      <span class="reg-tag" id="r3Tag">Initial</span>
+                    </div>
+                    <input id="r3" class="reg-input tabular" type="number" step="any" value="0" />
+                  </div>
+                </div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head">
+                  <h2>Control Unit</h2>
+                  <span class="meta-text">Decode &amp; Signals</span>
+                </div>
+                <div id="cuStatus" class="state-readout state-neutral">Ready</div>
+                <p id="cuDetail" class="panel-desc">Awaiting next instruction fetch and opcode decode.</p>
+                <div class="signal-grid" id="cuSignals">
+                  <div><span>Opcode</span><strong class="tabular" id="sigOp">—</strong></div>
+                  <div><span>Target</span><strong class="tabular" id="sigDest">—</strong></div>
+                  <div><span>Inputs</span><strong class="tabular" id="sigSrc">—</strong></div>
+                </div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head">
+                  <h2>ALU</h2>
+                  <span class="meta-text">Arithmetic Logic Unit</span>
+                </div>
+                <div id="aluStatus" class="state-readout state-neutral">Waiting</div>
+                <p id="aluDetail" class="panel-desc">Performs MOV, ADD, SUB, MULT, and DIV operations.</p>
+                <div class="alu-expr tabular" id="aluExpr">Awaiting operands</div>
+              </article>
+            </div>
+          </div>
+
+          <!-- Right / Counter, System Status & Memory History Column -->
+          <aside class="cpu-aside">
+            <div class="aside-top-pair">
+              <article class="panel compact-stat">
+                <span class="stat-label">Instruction Counter</span>
+                <div id="instructionCount" class="counter tabular">0</div>
+                <span class="meta-text">Executed instructions</span>
+              </article>
+
+              <article class="panel compact-stat">
+                <span class="stat-label">System Status</span>
+                <div id="systemStatus" class="state-readout state-ok">Ready</div>
+                <span class="meta-text">Registers · CU · ALU · Memory</span>
+              </article>
+            </div>
+
+            <article class="panel history-panel">
+              <div class="panel-head">
+                <h2>Memory / Instruction History</h2>
+                <span id="memoryStatus" class="meta-text">Waiting</span>
+              </div>
+              <ul id="memoryLog" class="history-list">
+                <li class="history-empty">No instructions recorded yet.</li>
+              </ul>
+            </article>
+          </aside>
+        </div>
+      </section>
+
+      <!-- PHASE 2: PIPELINE SIMULATOR -->
+      <section id="pipeline" class="page" role="tabpanel">
+        <div class="section-head">
+          <div>
+            <p class="kicker">Phase 2 · Five-Stage In-Order Pipeline</p>
+            <h1>Pipeline Simulator</h1>
+          </div>
+          <div class="cycle-readout">
+            <div id="cycle" class="cycle-badge tabular">Clock Cycle 0 / 0</div>
+          </div>
+        </div>
+
+        <div class="pipeline-layout">
+          <!-- Left / Top Control Deck -->
+          <article class="panel pipeline-controls">
+            <div class="panel-head">
+              <h2>Instruction Program</h2>
+              <span class="meta-text">1 per line · Max 20</span>
+            </div>
+
+            <label class="sr-only" for="programInput">Pipeline instructions</label>
+            <textarea id="programInput" rows="6" spellcheck="false">MOV R1, 10
+MOV R2, 20
+ADD R3, R1, R2
+SUB R2, R3, R1
+ADD R1, R2, R3</textarea>
+
+            <div class="control-row">
+              <label class="check">
+                <input type="checkbox" id="forwarding" checked />
+                <span>Enable data forwarding (EX→EX / MEM→EX)</span>
+              </label>
+
+              <label class="speed-control">
+                <span>Speed</span>
+                <select id="autoSpeed" aria-label="Auto run speed">
+                  <option value="1100">Slow (1.1s)</option>
+                  <option value="750" selected>Normal (0.75s)</option>
+                  <option value="400">Fast (0.4s)</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="btn-group wrap">
+              <button type="button" id="run" class="btn-primary">Run Pipeline</button>
+              <button type="button" id="prev" class="btn-secondary">Prev Cycle</button>
+              <button type="button" id="next" class="btn-secondary">Next Cycle</button>
+              <button type="button" id="auto" class="btn-secondary">Auto Run</button>
+              <button type="button" id="loadExample" class="btn-outline">Load Example</button>
+              <button type="button" id="resetPipe" class="btn-outline">Reset</button>
+            </div>
+
+            <div class="quick-presets">
+              <span class="preset-label">Programs:</span>
+              <button type="button" class="pipe-preset-btn" data-prog="default">RAW Chain (Default)</button>
+              <button type="button" class="pipe-preset-btn" data-prog="independent">Zero Hazards</button>
+              <button type="button" class="pipe-preset-btn" data-prog="mixed">Mixed Arithmetic</button>
+            </div>
+
+            <p id="pipeMessage" class="output" role="status" aria-live="polite">
+              Ready. Click Run Pipeline to simulate the five pipeline stages.
+            </p>
+          </article>
+
+          <!-- Right / Stage Visualizer + Register Trace -->
+          <div class="pipeline-visuals">
+            <article class="panel">
+              <div class="panel-head">
+                <h2>Five Pipeline Stages</h2>
+                <div class="stage-legend">
+                  <span id="forwardingIndicator" class="meta-text">Forwarding: Enabled</span>
+                  <span aria-hidden="true">·</span>
+                  <span id="stallCycleIndicator" class="meta-text">Stalls this cycle: 0</span>
+                </div>
+              </div>
+
+              <div id="stages" class="stages" aria-live="polite">
+                <div class="stage-card">
+                  <span class="stage-code">IF</span>
+                  <small>Instruction Fetch</small>
+                  <b class="stage-inst">—</b>
+                  <span class="stage-action">Idle</span>
+                </div>
+                <div class="stage-card">
+                  <span class="stage-code">ID</span>
+                  <small>Instruction Decode</small>
+                  <b class="stage-inst">—</b>
+                  <span class="stage-action">Idle</span>
+                </div>
+                <div class="stage-card">
+                  <span class="stage-code">EX</span>
+                  <small>Execute</small>
+                  <b class="stage-inst">—</b>
+                  <span class="stage-action">Idle</span>
+                </div>
+                <div class="stage-card">
+                  <span class="stage-code">MEM</span>
+                  <small>Memory Access</small>
+                  <b class="stage-inst">—</b>
+                  <span class="stage-action">Idle</span>
+                </div>
+                <div class="stage-card">
+                  <span class="stage-code">WB</span>
+                  <small>Write Back</small>
+                  <b class="stage-inst">—</b>
+                  <span class="stage-action">Idle</span>
+                </div>
+              </div>
+
+              <div class="pipeline-subbar">
+                <div class="live-regs" id="pipeRegs">
+                  <span class="meta-text">Architectural Registers at Cycle <strong id="pipeRegCycle" class="tabular">0</strong>:</span>
+                  <span class="reg-pill-text tabular">R1 = <strong id="pipeR1">10</strong></span>
+                  <span class="reg-pill-text tabular">R2 = <strong id="pipeR2">5</strong></span>
+                  <span class="reg-pill-text tabular">R3 = <strong id="pipeR3">0</strong></span>
+                </div>
+                <div id="stallQueueNote" class="stall-note"></div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head">
+                <h2>Cycle-by-Cycle Timing Diagram</h2>
+                <span class="meta-text">Click any cycle column (C1, C2...) to inspect that cycle</span>
+              </div>
+              <div class="scroll">
+                <table id="timing">
+                  <tbody>
+                    <tr>
+                      <td class="empty-cell">Click Run Pipeline to generate the cycle-by-cycle timing diagram.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- PHASE 3: SMART PIPELINE DOCTOR -->
+      <section id="doctor" class="page" role="tabpanel">
+        <div class="section-head">
+          <div>
+            <p class="kicker">Phase 3 · Dependency &amp; Performance Diagnostics</p>
+            <h1>Smart Pipeline Doctor</h1>
+          </div>
+          <button type="button" id="diagnose" class="btn-primary">Diagnose Program</button>
+        </div>
+
+        <div class="doctor-top-grid">
+          <article class="panel">
+            <div class="panel-head">
+              <h2>Diagnosis Summary</h2>
+              <span class="meta-text">Analyzes Pipeline Simulator Program</span>
+            </div>
+            <p id="diagnosis" class="output">
+              Click Diagnose Program (or run a program in the Pipeline Simulator) to analyze dependencies and stalls.
+            </p>
+            <div id="doctorAdvice" class="advice-box">
+              Data forwarding routes ALU/MOV outputs directly from EX/MEM to dependent instructions, eliminating RAW bubbles.
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <h2>Forwarding vs Stall Comparison</h2>
+              <span class="meta-text">Visual Schedule Impact</span>
+            </div>
+            <div id="comparisonBars" class="bars-wrap">
+              <div class="bar-group">
+                <div class="bar-label">
+                  <span>Without Forwarding</span>
+                  <strong id="barNoFwdVal" class="tabular">—</strong>
+                </div>
+                <div class="bar-track">
+                  <div id="barNoFwdFill" class="bar-fill bar-amber" style="width: 0%"></div>
+                </div>
+              </div>
+              <div class="bar-group">
+                <div class="bar-label">
+                  <span>With Forwarding</span>
+                  <strong id="barFwdVal" class="tabular">—</strong>
+                </div>
+                <div class="bar-track">
+                  <div id="barFwdFill" class="bar-fill bar-cyan" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+            <p class="note">
+              Model: five-stage, in-order pipeline. Split-cycle register write/read allows WB in first half and ID in second half. No cache misses, branch prediction, or out-of-order execution are simulated.
+            </p>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Performance Metrics</h2>
+            <span class="meta-text">Computed from Simulated Schedules</span>
+          </div>
+          <div id="metrics" class="metrics">
+            <div class="metric"><span>Instructions</span><strong class="tabular">—</strong></div>
+            <div class="metric"><span>Cycles (No Fwd)</span><strong class="tabular">—</strong></div>
+            <div class="metric"><span>Cycles (With Fwd)</span><strong class="tabular">—</strong></div>
+            <div class="metric"><span>Stalls Avoided</span><strong class="tabular">—</strong></div>
+            <div class="metric"><span>CPI (No Fwd)</span><strong class="tabular">—</strong></div>
+            <div class="metric"><span>CPI (With Fwd)</span><strong class="tabular">—</strong></div>
+            <div class="metric"><span>Speedup</span><strong class="tabular">—</strong></div>
+            <div class="metric"><span>Efficiency (With Fwd)</span><strong class="tabular">—</strong></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Detected RAW Dependencies &amp; Hazards</h2>
+            <span class="meta-text">Producer → Consumer Register Chain</span>
+          </div>
+          <div class="scroll">
+            <table id="hazards">
+              <thead>
+                <tr>
+                  <th>Producer</th>
+                  <th>Consumer</th>
+                  <th>Register</th>
+                  <th>Type</th>
+                  <th>Stall Impact (No Fwd)</th>
+                  <th>Forwarding Path &amp; Explanation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="6" class="empty-cell">No diagnosis run yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- LEARN TAB -->
+      <section id="learn" class="page" role="tabpanel">
+        <div class="section-head">
+          <div>
+            <p class="kicker">Architecture Reference &amp; Viva Prep</p>
+            <h1>Learn Computer Architecture</h1>
+          </div>
+          <p class="section-subtitle">
+            Core concepts behind single-cycle execution, five-stage pipelining, RAW hazards, data forwarding, and performance equations.
+          </p>
+        </div>
+
+        <div class="learn-grid">
+          <article class="panel">
+            <h2>1. CPU Core Architecture</h2>
+            <p>
+              A CPU executes programs by coordinating four core blocks:
+            </p>
+            <ul class="learn-list">
+              <li><strong>Registers (R1–R3):</strong> Ultra-fast on-chip storage holding active operands and results.</li>
+              <li><strong>Control Unit (CU):</strong> Fetches instructions, decodes opcodes, and generates control signals.</li>
+              <li><strong>ALU:</strong> Executes arithmetic operations (ADD, SUB, MULT, DIV) on input operands.</li>
+              <li><strong>Instruction Counter:</strong> Tracks how many instructions have completed execution.</li>
+            </ul>
+          </article>
+
+          <article class="panel">
+            <h2>2. Five Pipeline Stages</h2>
+            <p>
+              Pipelining overlaps instructions like an assembly line so five instructions can be in flight simultaneously:
+            </p>
+            <ul class="learn-list">
+              <li><strong>IF (Instruction Fetch):</strong> Reads the next instruction from memory.</li>
+              <li><strong>ID (Instruction Decode):</strong> Decodes opcode and reads source registers.</li>
+              <li><strong>EX (Execute):</strong> ALU computes arithmetic results or moves immediate values.</li>
+              <li><strong>MEM (Memory Access):</strong> Data memory stage (pass-through for ALU/MOV instructions).</li>
+              <li><strong>WB (Write Back):</strong> Writes the final result into the destination register.</li>
+            </ul>
+          </article>
+
+          <article class="panel">
+            <h2>3. Data Dependencies &amp; RAW Hazards</h2>
+            <p>
+              A <strong>RAW (Read After Write)</strong> hazard occurs when a later instruction reads a register before an earlier producer completes <strong>WB</strong>.
+            </p>
+            <pre class="code-sample">I1: ADD R3, R1, R2   // writes R3 in WB (Cycle 5)
+I2: SUB R2, R3, R1   // needs R3 in ID/EX (earlier!)</pre>
+            <p>
+              In an in-order pipeline, WAR and WAW hazards do not cause stalls because reads occur strictly in ID and writes occur strictly in WB in program order.
+            </p>
+          </article>
+
+          <article class="panel">
+            <h2>4. Pipeline Stalls vs Data Forwarding</h2>
+            <p>
+              Without forwarding, the consumer stalls (inserts waiting cycles called bubbles) until the producer reaches <strong>WB</strong>:
+            </p>
+            <ul class="learn-list">
+              <li><strong>Distance 1 (I1 → I2):</strong> 2 stall cycles without forwarding.</li>
+              <li><strong>Distance 2 (I1 → I3):</strong> 1 stall cycle without forwarding.</li>
+              <li><strong>Distance ≥ 3 (I1 → I4):</strong> 0 stalls — WB completes in time.</li>
+            </ul>
+            <p>
+              <strong>Data Forwarding (Bypassing)</strong> routes the computed ALU output directly from <strong>EX/MEM</strong> or <strong>MEM/WB</strong> pipeline registers to the consumer's ALU input, cutting data stalls to zero for ALU/MOV instructions.
+            </p>
+          </article>
+
+          <article class="panel">
+            <h2>5. Performance Formulas</h2>
+            <div class="formula-list">
+              <div class="formula-item">
+                <span>Ideal Pipeline Cycles (N instructions, 5 stages)</span>
+                <code class="tabular">Cycles = N + 4</code>
+              </div>
+              <div class="formula-item">
+                <span>Cycles Per Instruction (CPI)</span>
+                <code class="tabular">CPI = Total Cycles / N</code>
+              </div>
+              <div class="formula-item">
+                <span>Forwarding Speedup</span>
+                <code class="tabular">Speedup = Cycles(No Fwd) / Cycles(Fwd)</code>
+              </div>
+              <div class="formula-item">
+                <span>Pipeline Efficiency</span>
+                <code class="tabular">Efficiency = (N / Total Cycles) × 100%</code>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <h2>6. Viva Quick-Check Q&amp;A</h2>
+            <div class="qa-list">
+              <details open>
+                <summary>Why does forwarding eliminate stalls for ADD followed by SUB?</summary>
+                <p>Because ADD produces its sum at the end of EX, and forwarding sends it straight into SUB's EX stage without waiting for WB.</p>
+              </details>
+              <details>
+                <summary>Why is Pipeline Efficiency below 100% even with 0 stalls?</summary>
+                <p>Filling and draining the 5-stage pipeline adds 4 overhead cycles (N + 4 total). As N grows larger, efficiency approaches 100% (CPI → 1.0).</p>
+              </details>
+              <details>
+                <summary>What happens on division by zero in Phase 1?</summary>
+                <p>The Control Unit and ALU halt the instruction safely, preserve register values, increment nothing, and display an explicit error status.</p>
+              </details>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Future Smart CPU</span>
+      <span aria-hidden="true">·</span>
+      <span>Interactive Computer Architecture Simulator</span>
+</footer>
+  </body>
+</html>
